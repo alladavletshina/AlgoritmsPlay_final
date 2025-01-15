@@ -16,10 +16,8 @@ public class GeneratePresetImpl implements GeneratePreset {
         Army armyOfComputer = new Army();
         Set<Integer> occupiedCoordinates = new HashSet<>();
 
-        // Преобразуем юниты в объекты с эффективностью
         List<UnitWithEfficiency> unitsWithEfficiency = createUnitsWithEfficiency(unitsAvailable);
 
-        // Сортируем юниты по эффективности
         sortUnitsByEfficiency(unitsWithEfficiency);
 
         int usedPoints = 0;
@@ -36,10 +34,9 @@ public class GeneratePresetImpl implements GeneratePreset {
                 int[] coordinates = findFreePoint(occupiedCoordinates);
 
                 if (coordinates == null) {
-                    break; // Нет доступных координат
+                    break;
                 }
 
-                // Создаем уникальный экземпляр юнита
                 String uniqueUnitName = unitType + " " + unitTypeCount.getOrDefault(unitType, 0);
                 Unit newUnit = new Unit(
                         uniqueUnitName,
@@ -54,7 +51,6 @@ public class GeneratePresetImpl implements GeneratePreset {
                         coordinates[1]
                 );
 
-                // Добавляем юнита в армию
                 armyOfComputer.getUnits().add(newUnit);
                 int key = coordinates[0] * MAP_HEIGHT + coordinates[1];
                 occupiedCoordinates.add(key);
@@ -75,7 +71,7 @@ public class GeneratePresetImpl implements GeneratePreset {
                 }
             }
         }
-        return null; // Все координаты заняты
+        return null;
     }
 
     private List<UnitWithEfficiency> createUnitsWithEfficiency(List<Unit> unitsAvailable) {

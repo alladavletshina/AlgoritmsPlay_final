@@ -12,27 +12,27 @@ public class UnitTargetPathFinderImpl implements UnitTargetPathFinder {
     private static final int HEIGHT = 21;
 
     @Override
-    public List<Edge> getTargetPath(Unit attacker, Unit target, List<Unit> otherUnits) {
-        int[][] distanceGrid = new int[WIDTH][HEIGHT];
-        Edge[][] pathGrid = new Edge[WIDTH][HEIGHT];
-        boolean[][] visited = new boolean[WIDTH][HEIGHT];
+    public List<Edge> getTargetPath(Unit attackUnit, Unit targetUnit, List<Unit> existingUnitList) {
+
         Set<String> occupiedCells = new HashSet<>();
+        int[][] distanceMatrix = new int[WIDTH][HEIGHT];
+        Edge[][] pathMatrix = new Edge[WIDTH][HEIGHT];
+        boolean[][] isVisited = new boolean[WIDTH][HEIGHT];
         Queue<EdgeDistance> queue = new LinkedList<>();
 
-        // Инициализация начального состояния грида
-        for (int[] row : distanceGrid) {
-            Arrays.fill(row, Integer.MAX_VALUE);
+        for (int i = 0; i < distanceMatrix.length; i++) {
+            Arrays.fill(distanceMatrix[i], Integer.MAX_VALUE);
         }
 
-        int startX = attacker.getxCoordinate();
-        int startY = attacker.getyCoordinate();
-        distanceGrid[startX][startY] = 0;
+        int startX = attackUnit.getxCoordinate();
+        int startY = attackUnit.getyCoordinate();
+        distanceMatrix[startX][startY] = 0;
         queue.offer(new EdgeDistance(startX, startY, 0));
 
-        // Добавление занятых клеток от других юнитов
-        for (Unit unit : otherUnits) {
-            if (unit != attacker && unit != target && unit.isAlive()) {
-                occupiedCells.add(unit.getxCoordinate() + "," + unit.getyCoordinate());
+        for (Unit unit : existingUnitList) {
+            if (unit != targetUnit && unit.isAlive() && unit != attackUnit) {
+                String coordinates = unit.getxCoordinate() + "," + unit.getyCoordinate();
+                occupiedCells.add(coordinates);
             }
         }
 
@@ -41,12 +41,12 @@ public class UnitTargetPathFinderImpl implements UnitTargetPathFinder {
             int x = current.getX();
             int y = current.getY();
 
-            if (visited[x][y]) {
+            if (isVisited[x][y]) {
                 continue;
             }
-            visited[x][y] = true;
+            isVisited[x][y] = true;
 
-            if (x == target.getxCoordinate() && y == target.getyCoordinate()) {
+            if (x == targetUnit.getxCoordinate() && y == targetUnit.getyCoordinate()) {
                 break;
             }
 
@@ -58,11 +58,11 @@ public class UnitTargetPathFinderImpl implements UnitTargetPathFinder {
                     int newX = x + dx;
                     int newY = y + dy;
 
-                    if (isValid(newX, newY, occupiedCells, target)) {
-                        int newDistance = distanceGrid[x][y] + 1;
-                        if (newDistance < distanceGrid[newX][newY]) {
-                            distanceGrid[newX][newY] = newDistance;
-                            pathGrid[newX][newY] = new Edge(x, y);
+                    if (isValidForPosition(newX, newY, occupiedCells, targetUnit)) {
+                        int newDistance = distanceMatrix[x][y] + 1;
+                        if (newDistance < distanceMatrix[newX][newY]) {
+                            distanceMatrix[newX][newY] = newDistance;
+                            pathMatrix[newX][newY] = new Edge(x, y);
                             queue.offer(new EdgeDistance(newX, newY, newDistance));
                         }
                     }
@@ -70,28 +70,19 @@ public class UnitTargetPathFinderImpl implements UnitTargetPathFinder {
             }
         }
 
-        return buildPath(target, startX, startY, pathGrid);
+        return buildPathWay(targetUnit, startX, startY, pathMatrix);
     }
 
-    private boolean isValid(int x, int y, Set<String> occupiedCells, Unit target) {
-        if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) {
-            return false;
-        }
-        String cellKey = x + "," + y;
-        return !occupiedCells.contains(cellKey)
-                && !(x == target.getxCoordinate() && y == target.getyCoordinate());
-    }
-
-    private List<Edge> buildPath(Unit target, int startX, int startY, Edge[][] pathGrid) {
+    private List<Edge> buildPathWay(Unit target, int startX, int startY, Edge[][] pathGrid) {
         List<Edge> path = new ArrayList<>();
-        int x = target.getxCoordinate();
-        int y = target.getyCoordinate();
+        int currentX = target.getxCoordinate();
+        int currentY = target.getyCoordinate();
 
-        while (x != startX || y != startY) {
-            if (pathGrid[x][y] != null) {
-                path.add(pathGrid[x][y]);
-                x = pathGrid[x][y].getX();
-                y = pathGrid[x][y].getY();
+        while (currentX != startX || currentY != startY) {
+            if (pathGrid[currentX][currentY] != null) {
+                path.add(pathGrid[currentX][currentY]);
+                currentX = pathGrid[currentX][currentY].getX();
+                currentY = pathGrid[currentX][currentY].getY();
             } else {
                 break;
             }
@@ -101,4 +92,14 @@ public class UnitTargetPathFinderImpl implements UnitTargetPathFinder {
         Collections.reverse(path);
         return path;
     }
+
+    private boolean isValidForPosition(int x, int y, Set<String> occupiedCells, Unit target) {
+        if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) {
+            return false;
+        }
+        String cellKey = x + "," + y;
+        return !occupiedCells.contains(cellKey) &&
+                !(x == target.getxCoordinate() && y == target.getyCoordinate());
+    }
+
 }

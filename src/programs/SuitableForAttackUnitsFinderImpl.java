@@ -14,13 +14,12 @@ public class SuitableForAttackUnitsFinderImpl implements SuitableForAttackUnitsF
         for (List<Unit> row : unitsByRow) {
             for (Unit unit : row) {
                 if (unit == null || !unit.isAlive()) {
-                    continue; // Пропускаем мертвые или отсутствующие юниты
+                    continue;
                 }
 
-                // Проверяем, является ли юнит крайним справа или слева в своем ряду
                 if ((isLeftArmyTarget && suitAttackComputer(unit, row))
                         || (!isLeftArmyTarget && suitAttackPlayer(unit, row))) {
-                    suitsUnits.add(unit); // Добавляем подходящий юнит в список
+                    suitsUnits.add(unit);
                 }
             }
         }
@@ -32,19 +31,19 @@ public class SuitableForAttackUnitsFinderImpl implements SuitableForAttackUnitsF
         int unitIndex = row.indexOf(unit);
         for (int i = unitIndex + 1; i < row.size(); ++i) {
             if (row.get(i) != null) {
-                return false; // Найден следующий живой юнит, значит текущий не самый правый
+                return false;
             }
         }
-        return true; // Все последующие позиции пусты, значит текущий юнит действительно самый правый
+        return true;
     }
 
     private boolean suitAttackPlayer(Unit unit, List<Unit> row) {
         int unitIndex = row.indexOf(unit);
         for (int i = unitIndex - 1; i >= 0; --i) {
             if (row.get(i) != null) {
-                return false; // Найден предыдущий живой юнит, значит текущий не самый левый
+                return false;
             }
         }
-        return true; // Все предыдущие позиции пусты, значит текущий юнит действительно самый левый
+        return true;
     }
 }
