@@ -30,5 +30,34 @@
 
 **Алгоритмическая сложность метода simulate будет O(min(n,m)⋅(n+m)log(n+m)).**
 
+2.1. Инициализация списков равно O(n + m)
+
+List<Unit> playerUnits = new ArrayList<>(armyOfPlayer.getUnits());
+List<Unit> computerUnits = new ArrayList<>(armyOfComputer.getUnits());
+
+2.2. Метод unitAttack равно O(klogK + l) - временная сложность одного раунда равна O((n + m)log(n + m))
+
+private void unitAttack(List<Unit> attackers, List<Unit> defenders) throws InterruptedException {
+    Collections.sort(attackers, new Comparator<Unit>() {
+        @Override
+        public int compare(Unit o1, Unit o2) {
+            return Integer.compare(o2.getBaseAttack(), o1.getBaseAttack());
+        }
+    });
+
+    for (Unit attacker : attackers) {
+        if (attacker.isAlive()) {
+            Unit target = attacker.getProgram().attack();
+            if (target != null && target.isAlive()) {
+                this.printBattleLog.printBattleLog(attacker, target);
+            }
+        }
+    }
+
+    defenders.removeIf(unit -> !unit.isAlive());
+}
+
+Итоговая оценка сложности: O(min(n,m)⋅(n+m)log(n+m))
+
 Сложность O(min(n,m)⋅(n+m)log(n+m)) обычно лучше, чем O(n2Logn), особенно когда n и m сильно различаются.
 
