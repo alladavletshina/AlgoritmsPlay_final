@@ -9,41 +9,28 @@ public class SuitableForAttackUnitsFinderImpl implements SuitableForAttackUnitsF
 
     @Override
     public List<Unit> getSuitableUnits(List<List<Unit>> unitsByRow, boolean isLeftArmyTarget) {
-        List<Unit> suitsUnits = new ArrayList<>();
+        List<Unit> suitableUnits = new ArrayList<>();
 
         for (List<Unit> row : unitsByRow) {
-            for (Unit unit : row) {
+
+            int start = isLeftArmyTarget ? 0 : row.size() - 1;
+            int end = isLeftArmyTarget ? row.size() : -1;
+            int step = isLeftArmyTarget ? 1 : -1;
+
+            for (int i = start; i != end; i += step) {
+                Unit unit = row.get(i);
+
                 if (unit == null || !unit.isAlive()) {
                     continue;
                 }
 
-                if ((isLeftArmyTarget && suitAttackComputer(unit, row))
-                        || (!isLeftArmyTarget && suitAttackPlayer(unit, row))) {
-                    suitsUnits.add(unit);
+                int nextIndex = i + step;
+                if (nextIndex < 0 || nextIndex >= row.size() || row.get(nextIndex) == null) {
+                    suitableUnits.add(unit);
                 }
             }
         }
 
-        return suitsUnits;
-    }
-
-    private boolean suitAttackComputer(Unit unit, List<Unit> row) {
-        int unitIndex = row.indexOf(unit);
-        for (int i = unitIndex + 1; i < row.size(); ++i) {
-            if (row.get(i) != null) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private boolean suitAttackPlayer(Unit unit, List<Unit> row) {
-        int unitIndex = row.indexOf(unit);
-        for (int i = unitIndex - 1; i >= 0; --i) {
-            if (row.get(i) != null) {
-                return false;
-            }
-        }
-        return true;
+        return suitableUnits;
     }
 }
